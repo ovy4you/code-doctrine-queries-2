@@ -2,6 +2,8 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Event\PostPublishedEvent;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -42,7 +44,7 @@ class PostController extends Controller
      * @Method("POST")
      * @Template("AppBundle:Post:new.html.twig")
      */
-    public function createAction(Request $request)
+    public function createAction(Request $request, EventDispatcherInterface $dispatcher)
     {
         $entity = new Post();
         $form = $this->createCreateForm($entity);
@@ -55,6 +57,9 @@ class PostController extends Controller
 
             return $this->redirect($this->generateUrl('post_show', array('id' => $entity->getId())));
         }
+
+        $event = new PostPublishedEvent($post);
+        $dispatcher->dispatch(PostPublishedEvent::NAME, $event);
 
         return array(
             'entity' => $entity,
